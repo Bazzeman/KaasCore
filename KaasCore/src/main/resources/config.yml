@@ -1,8 +1,10 @@
-# Location where new players will be teleported on first time join.
+# Config for KaasCore plugin
+# Location where new players will be teleported on first join
+
 spawn-location:
   world: "world"       # The world name
-  x:                   # X coordinate
-  y:                   # Y coordinate
-  z:                   # Z coordinate
+  x: 0                 # X coordinate
+  y: 999               # Y coordinate
+  z: 0                 # Z coordinate
   yaw: 0.0             # Direction the player faces horizontally (0 = south)
   pitch: 0.0           # Direction the player faces vertically (0 = straight ahead)
