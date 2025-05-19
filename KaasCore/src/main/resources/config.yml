@@ -1,0 +1,8 @@
+# Location where new players will be teleported on first time join.
+spawn-location:
+  world: "world"       # The world name
+  x:                   # X coordinate
+  y:                   # Y coordinate
+  z:                   # Z coordinate
+  yaw: 0.0             # Direction the player faces horizontally (0 = south)
+  pitch: 0.0           # Direction the player faces vertically (0 = straight ahead)
