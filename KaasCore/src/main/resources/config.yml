@@ -2,6 +2,7 @@
 # Location where new players will be teleported on first join
 
 spawn-location:
+  enabled: false       # Whether this feature is enabled
   world: "world"       # The world name
   x: 0                 # X coordinate
   y: 999               # Y coordinate

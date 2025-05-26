@@ -16,8 +16,9 @@ public class EventManager implements Listener {
 
     @EventHandler
     public void OnFirstJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
+        if (!configManager.isSpawnSystemEnabled()) return;
 
+        Player player = event.getPlayer();
         if (!player.hasPlayedBefore()) {
             player.teleport(configManager.getSpawnLocation());
         }

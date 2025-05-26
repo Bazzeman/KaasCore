@@ -7,8 +7,10 @@ import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class ConfigManager {
+
     private final KaasCore kaasCore;
     @Getter private Location spawnLocation;
+    @Getter private boolean isSpawnSystemEnabled;
 
     public ConfigManager(KaasCore kaasCore) {
         this.kaasCore = kaasCore;
@@ -18,6 +20,7 @@ public class ConfigManager {
         kaasCore.saveDefaultConfig(); // Creates config.yml if it doesn't exist
         FileConfiguration config = kaasCore.getConfig();
 
+        isSpawnSystemEnabled = config.getBoolean("spawn-location.enabled", false);
         String worldName = config.getString("spawn-location.world", "world");
         double x = config.getDouble("spawn-location.x", 0);
         double y = config.getDouble("spawn-location.y", 999);
