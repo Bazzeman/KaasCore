@@ -6,3 +6,22 @@ load: STARTUP
 authors: [ Bas Pennings ]
 description: Minecraft Java 1.21.5 Maven plugin exclusively made for the KaasLandMC Minecraft server.
 website: https://github.com/Bazzeman/KaasCore
+
+commands:
+  clan:
+    description: Manages clans
+    usage: "/clan [create|invite|disband|type|kick|leave|list] or /clan"
+
+permissions:
+  kaascore.clansystem.*:
+    description: Allows access to ALL clan functions regardless of operator status.
+    default: false
+    children:
+      kaascore.clansystem.clan: true
+      kaascore.clansystem.admin: true
+  kaascore.clansystem.clan:
+    description: Allows clan creation, disbanding, and editing, granted by default
+    default: true
+  kaascore.clansystem.admin:
+    description: Allows disbanding and changing clan types for all clans, granted to server operators by default.
+    default: op
