@@ -18,11 +18,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ClanCommands implements CommandExecutor, TabCompleter {
-    private final KaasCore claimPlugin;
+
+    private final KaasCore kaasCore;
     private final Logger logger;
 
-    public ClanCommands(KaasCore claimPlugin, Logger logger) {
-        this.claimPlugin = claimPlugin;
+    public ClanCommands(KaasCore kaasCore, Logger logger) {
+        this.kaasCore = kaasCore;
         this.logger = logger;
     }
 
@@ -125,7 +126,7 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
 
     private void setExecutor(@NotNull Method method) {
         String commandName = Objects.requireNonNull(method.getAnnotation(CommandHandler.class)).name();
-        PluginCommand command = this.claimPlugin.getCommand(commandName);
+        PluginCommand command = kaasCore.getCommand(commandName);
         if (command != null) {
             Objects.requireNonNull(command).setExecutor(this);
         } else {
@@ -135,7 +136,7 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
 
     private void setTabCompleter(@NotNull Method method) {
         String commandName = Objects.requireNonNull(method.getAnnotation(CommandCompleter.class)).name();
-        PluginCommand command = this.claimPlugin.getCommand(commandName);
+        PluginCommand command = kaasCore.getCommand(commandName);
         if (command != null) {
             Objects.requireNonNull(command).setTabCompleter(this);
         } else {
