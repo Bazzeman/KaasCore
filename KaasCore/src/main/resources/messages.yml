@@ -1,0 +1,51 @@
+general:
+  no-permission: "<red>You don't have permission to use this command."
+  invalid-sender: "<red>You can't use this command as sender type {0}" # command sender tpe
+  reload-success: "<yellow>Successfully updated clans and player colors!"
+
+clans:
+  clan-commands: "<bold><gold>KaasCore</gold> <orange>Clans commands</orange></bold><yellow> \n
+    /clan create <name> <type> \n
+    /clan invite <username> \n
+    /clan join \n
+    /clan disband \n
+    /clan kick <username> \n
+    /clan leave \n
+    /clan list"
+
+  # Creation
+  invalid-clan-name-length: "<red>Clan name should be between 3 and 16 characters long and should not contain spaces!"
+  invalid-clan-type: "<red>Please choose a valid clan type!"
+  already-in-clan: "<red>You are already in a clan!"
+  created-clan: "<yellow>Successfully created {0} clan, {1}!" # clan type, clan name
+
+  # Invitations
+  invite-sent: "<yellow>Successfully invited player {0}" # player name
+  invite-received: "<yellow>You have been invited to join {0} clan {1}. Join it using /clan join" # clan type, clan name
+  no-invites: "<yellow>You have not received any clan invite"
+  invalid-invite: "<yellow>Invalid clan invite! Did not join clan."
+  joined-clan: "<yellow>Successfully joined {0} clan {1}" # clan type, clan name
+
+  # Owner-only actions
+  must-be-owner: "<red>You must be a clan owner to do this!"
+  cant-kick-self: "<red>You can't kick yourself!"
+  player-kicked: "<yellow>Successfully kicked player {0}" # player name
+  kicked-from-clan: "<yellow>You have been kicked from {0} clan {1}" # clan type, clan name
+  not-in-target-clan: "<red>Targeted player is not in your clan!"
+
+  # Leave/Disband
+  cant-leave-own-clan: "<red>You can't leave your own clan. Use /clan disband"
+  not-in-clan-error: "<red>You are not in a clan!"
+  left-clan: "<yellow>Successfully left clan!"
+  disbanded-clan: "<yellow>Successfully disbanded clan!"
+
+  # List
+  no-clans: "<yellow>No clans to list"
+  clan-list-header: "<yellow>------- List of all clans -------"
+  clan-list-footer: "<yellow>---------------------------------"
+  clan-list-entry: "{0} ({1})"      # clan name, clan type
+  clan-list-owner: "- {0} (owner)"  # clan owner name
+  clan-list-member: "- {0}"         # clan member name
+
+trolling:
+  gooning: "<yellow>{0} is gooning!" # player name

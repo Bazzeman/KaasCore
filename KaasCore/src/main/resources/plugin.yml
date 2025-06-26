@@ -1,16 +1,26 @@
 name: KaasCore
-version: '1.0'
+version: '1.2.4'
 main: bas.pennings.kaasCore.KaasCore
 api-version: '1.21'
 load: STARTUP
-authors: [ Bas Pennings ]
+author: Bas Pennings
 description: Minecraft Java 1.21.5 Maven plugin exclusively made for the KaasLandMC Minecraft server.
 website: https://github.com/Bazzeman/KaasCore
+prefix: KaasCore
 
 commands:
   clan:
     description: Manages clans
     usage: "/clan [create|invite|disband|type|kick|leave|list] or /clan"
+  goon:
+    description: Goon
+    usage: "/goon"
+  hidenametag:
+    description: Hide the player's nametag
+    usage: "/hidenametag"
+  kaascore:
+    description: Reload the KaasCore plugin
+    usage: "/kaascore"
 
 permissions:
   kaascore.clansystem.*:
@@ -20,8 +30,17 @@ permissions:
       kaascore.clansystem.clan: true
       kaascore.clansystem.admin: true
   kaascore.clansystem.clan:
-    description: Allows clan creation, disbanding, and editing, granted by default
+    description: Allows clan creation, disbanding, and editing, granted by default.
     default: true
   kaascore.clansystem.admin:
     description: Allows disbanding and changing clan types for all clans, granted to server operators by default.
+    default: op
+  kaascore.goon:
+    description: Allows players to use the goon command.
+    default: true
+  kaascore.hidenametag:
+    description: Allows players to use the hide nametag command.
+    default: true
+  kaascore.reload:
+    description: Allows players to use the KaasCore reload command.
     default: op
