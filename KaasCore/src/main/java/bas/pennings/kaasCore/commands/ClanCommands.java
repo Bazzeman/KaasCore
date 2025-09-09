@@ -13,8 +13,6 @@ import bas.pennings.kaasCore.utils.ClanInviteUtil;
 import bas.pennings.kaasCore.utils.MessageFormatter;
 import bas.pennings.kaasCore.utils.ScoreboardTeamManager;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -50,19 +48,23 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
                     continue;
 
                 if (!sender.hasPermission(annotation.permission())) {
-                    sendPlayerFeedback(sender, "You don't have permission to use this command.");
+                    sender.sendMessage(msg.getMessage(GENERAL_MESSAGE_SECTION, "no-permission"));
                     return true;
                 }
 
                 if (Arrays.stream(annotation.senderTypes())
                         .noneMatch(senderType -> senderType.isValidSender(sender))) {
-                    sendPlayerFeedback(sender, "You can't use this command as sender type " + sender.getClass().getSimpleName());
+                    sender.sendMessage(msg.getFormattedMessage(GENERAL_MESSAGE_SECTION, "invalid-sender", 
+                            sender.getClass().getSimpleName()));
                     return true;
                 }
 
                 try {
                     boolean correctUsage = (Boolean) method.invoke(this, new Object[]{sender, args});
-                    if (!correctUsage) sendPlayerFeedback(sender, "Incorrect usage: " + annotation.usage());
+                    if (!correctUsage) {
+                        sender.sendMessage(msg.getFormattedMessage(GENERAL_MESSAGE_SECTION, "invalid-usage", 
+                                annotation.usage()));
+                    }
                 } catch (Exception e) {
                     logger.severe(e.getMessage());
                 }
@@ -158,10 +160,6 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void sendPlayerFeedback(@NotNull CommandSender sender, @NotNull String message) {
-        sender.sendMessage(Component.text(message, NamedTextColor.RED));
-    }
-
     @CommandHandler(
             name = "clan",
             usage = "/clan [create|invite|disband|type|kick|leave|list] or /clan",
@@ -171,7 +169,7 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         Player player = (Player) sender;
 
         if (args.length == 0) {
-            player.sendMessage(msg.getMessage("clan", "clan-commands"));
+            player.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "clan-commands"));
             return true;
         }
 
@@ -213,9 +211,8 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         Sound sound = ThreadLocalRandom.current().nextBoolean() ? Sound.BLOCK_SLIME_BLOCK_BREAK : Sound.BLOCK_HONEY_BLOCK_BREAK;
 
         broadcastToPlayersInRadius(player,
-                Component.text(player.getName(), NamedTextColor.WHITE)
-                        .append(Component.text(" is gooning!", NamedTextColor.YELLOW)),
-                20);
+            msg.getFormattedMessage("trolling", "gooning", player.getName()),
+            20);
 
         player.playSound(player.getLocation(), sound, 1, pitch);
         spawnGoonParticlesWithVelocity(player);
@@ -236,7 +233,7 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @CommandCompleter(name = "clan", permission = "kaascore.reload")
+    @CommandCompleter(name = "kaascore", permission = "kaascore.reload")
     private List<String> onKaasCoreCompletion(CommandSender sender, String[] args) {
         return args.length == 1 ? List.of("reload") : List.of();
     }
@@ -254,13 +251,15 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         ClanType clanType = clan != null ? clan.getType() : null;
 
         boolean hidden = ScoreboardTeamManager.togglePlayerHiddenNametagTeam(player, clanType);
-        player.sendMessage(Component.text("Nametag is now " + (hidden ? "hidden" : "visible"), NamedTextColor.YELLOW));
+        player.sendMessage(msg.getFormattedMessage(GENERAL_MESSAGE_SECTION, "nametag-visibility", 
+                hidden ? "hidden" : "visible"));
         return true;
     }
 
     private void requestReload(CommandSender sender) {
-        if (sender instanceof Player player  && !sender.hasPermission("kaascore.reload")) {
-            sendPlayerFeedback(player, "You don't have permission to use this command.");
+        if (!sender.hasPermission("kaascore.reload")) {
+            sender.sendMessage(msg.getMessage(GENERAL_MESSAGE_SECTION, "no-permission"));
+            return;
         }
 
         clanService.loadClans();
@@ -269,24 +268,21 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         Bukkit.getOnlinePlayers().forEach(p -> {
             Clan clan = clanService.getClanByPlayer(p.getUniqueId());
             ClanType clanType = clan != null ? clan.getType() : null;
-            ScoreboardTeamManager.addPlayerToClanTypeTeam(p, clanType);
+
+            if (clanType != null) {
+                ScoreboardTeamManager.addPlayerToClanTypeTeam(p, clanType);
+            }
         });
 
-        if (sender instanceof Player player) {
-            player.sendMessage(Component.text("Successfully updated clans and player colors!", NamedTextColor.YELLOW));
-        }
-        else {
-            sender.sendMessage(Component.text("Successfully updated clans and player colors!", NamedTextColor.YELLOW));
-        }
+        sender.sendMessage(msg.getMessage(GENERAL_MESSAGE_SECTION, "reload-success"));
     }
 
     private boolean requestClanCreation(Player player, String[] args) {
-        String clanName = args[1];
-
         if (args.length < 3) {
             return false;
         }
 
+        String clanName = args[1];
         if (clanName.length() < 3 || clanName.length() > 16) {
             player.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "invalid-clan-name-length"));
             return true;
@@ -300,7 +296,8 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
 
         try {
             clanService.createClan(clanName, clanType, player.getUniqueId());
-            player.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "created-clan", clanType.name, clanName));
+            player.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "created-clan", 
+                    clanType.name, clanName));
             ScoreboardTeamManager.addPlayerToClanTypeTeam(player, clanType);
         } catch (IllegalArgumentException e) {
             player.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "already-in-clan"));
@@ -344,9 +341,9 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         }
 
         if (ClanInviteUtil.createInvite(sender.getUniqueId().toString(), invitedPlayer.getUniqueId().toString()) != null) {
-            // TODO: Finish these two messages.
-            sender.sendMessage(Component.text("Successfully invited player " + invitedPlayer.getName(), NamedTextColor.YELLOW));
-            invitedPlayer.sendMessage(Component.text("You have been invited to join clan " + clan.getName() + ". Join it using /clan join", NamedTextColor.YELLOW));
+            sender.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "invite-sent", invitedPlayer.getName()));
+            invitedPlayer.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "invite-received", 
+                    clan.getType().name, clan.getName()));
         } else {
             sender.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "invitee-already-invited", inviteeName));
         }
@@ -364,13 +361,14 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
             if (clan != null) {
                 clanService.addClanMember(clan.getOwnerUUID(), sender.getUniqueId());
                 ClanInviteUtil.clearInvite(sender.getUniqueId().toString());
-                sender.sendMessage(Component.text("Successfully joined clan " + clan.getName(), NamedTextColor.YELLOW));
+                sender.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "joined-clan", 
+                        clan.getType().name, clan.getName()));
                 ScoreboardTeamManager.addPlayerToClanTypeTeam(sender, clan.getType());
             } else {
-                sender.sendMessage(Component.text("Invalid clan invite! Did not join clan.", NamedTextColor.YELLOW));
+                sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "invalid-invite"));
             }
         } else {
-            sender.sendMessage(Component.text("You have not received any clan invite", NamedTextColor.YELLOW));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "no-invites"));
         }
 
         return true;
@@ -384,7 +382,7 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
 
             clan.getMemberUUIDs().forEach(uuid -> {
                 OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-                    ScoreboardTeamManager.removePlayerFromClanTypeTeam(player, clan.getType());
+                ScoreboardTeamManager.removePlayerFromClanTypeTeam(player, clan.getType());
             });
 
             OfflinePlayer owner = Bukkit.getOfflinePlayer(clan.getOwnerUUID());
@@ -392,9 +390,9 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
                 ScoreboardTeamManager.removePlayerFromClanTypeTeam(owner, clan.getType());
             }
 
-            sender.sendMessage(Component.text("Successfully disbanded clan!", NamedTextColor.YELLOW));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "disbanded-clan"));
         } catch (ClanNotFoundException e) {
-            sender.sendMessage(Component.text("You must be a clan owner to do this!", NamedTextColor.RED));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "must-be-owner"));
         }
     }
 
@@ -404,41 +402,33 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         }
 
         if (!clanService.isOwner(sender.getUniqueId())) {
-            sender.sendMessage(Component.text("You must be a clan owner to do this!", NamedTextColor.RED));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "must-be-owner"));
             return true;
         }
 
         Player playerToKick = Bukkit.getPlayer(args[1]);
         if (playerToKick == null) {
-            sender.sendMessage(Component.text(
-                    "Player "
-                            + args[1]
-                            + " cannot be found! Make sure this player is online.",
-                    NamedTextColor.RED));
+            sender.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "invalid-invitee", args[1]));
             return true;
         }
 
         if (sender.getName().equals(args[1])) {
-            sender.sendMessage(Component.text("You can't kick yourself!", NamedTextColor.RED));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "cant-kick-self"));
             return true;
         }
 
         try {
-            clanService.removeClanMember(sender.getUniqueId(), playerToKick.getUniqueId());
-            sender.sendMessage(Component.text(
-                    "Successfully kicked player "
-                            + playerToKick.getName(),
-                    NamedTextColor.YELLOW));
-            if (playerToKick.isOnline()) {
-                playerToKick.sendMessage(Component.text(
-                        "You have been kicked from your clan.",
-                        NamedTextColor.YELLOW));
-            }
-
             Clan clan = clanService.getClanByOwner(sender.getUniqueId());
+            clanService.removeClanMember(sender.getUniqueId(), playerToKick.getUniqueId());
+            sender.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "player-kicked", 
+                    playerToKick.getName()));
+            if (playerToKick.isOnline()) {
+                playerToKick.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "kicked-from-clan",
+                        clan.getType().name, clan.getName()));
+            }
             ScoreboardTeamManager.removePlayerFromClanTypeTeam(playerToKick, clan.getType());
         } catch (IllegalArgumentException e) {
-            sender.sendMessage(Component.text("Targeted player is not in your clan!", NamedTextColor.RED));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "not-in-target-clan"));
         }
 
         return true;
@@ -446,58 +436,62 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
 
     private void requestLeavingClan(Player sender) {
         if (clanService.isOwner(sender.getUniqueId())) {
-            sender.sendMessage(Component.text("You can't leave your own clan. Use /clan disband", NamedTextColor.RED));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "cant-leave-own-clan"));
             return;
         }
 
         Clan targetClan = clanService.getClanByMember(sender.getUniqueId());
         if (targetClan == null) {
-            sender.sendMessage(Component.text("You are not in a clan!", NamedTextColor.RED));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "not-in-clan-error"));
             return;
         }
 
         try {
             clanService.removeClanMember(targetClan.getOwnerUUID(), sender.getUniqueId());
-            sender.sendMessage(Component.text("Successfully left clan!", NamedTextColor.YELLOW));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "left-clan"));
             ScoreboardTeamManager.removePlayerFromClanTypeTeam(sender, targetClan.getType());
         } catch (IllegalArgumentException e) {
-            sender.sendMessage(Component.text("You are not in a clan!", NamedTextColor.RED));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "not-in-clan-error"));
         }
     }
 
     private void requestListClans(Player sender) {
         Collection<Clan> clans = clanService.getAllClans();
         if (clans.isEmpty()) {
-            sender.sendMessage(Component.text("No clans to list", NamedTextColor.YELLOW));
-        } else {
-            sender.sendMessage(Component.text("--- List of all clans ---", NamedTextColor.YELLOW));
-
-            for (Clan clan : clans) {
-                ClanType type = clan.getType();
-
-                sender.sendMessage(Component.text(clan.getName() + " (" + type.name + ")", type.color));
-
-                UUID ownerUUID = clan.getOwnerUUID();
-                Player ownerPlayer = Bukkit.getPlayer(ownerUUID);
-                OfflinePlayer offlineOwner = Bukkit.getOfflinePlayer(ownerUUID);
-
-                String ownerName = ownerPlayer != null ? ownerPlayer.getName()
-                        : offlineOwner.hasPlayedBefore() ? offlineOwner.getName() : "Unknown player";
-
-                sender.sendMessage(Component.text("- " + ownerName + " (owner)", type.color));
-
-                for (UUID memberUUID : clan.getMemberUUIDs()) {
-                    Player memberPlayer = Bukkit.getPlayer(memberUUID);
-                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(memberUUID);
-
-                    String memberName = memberPlayer != null ? memberPlayer.getName()
-                            : offlinePlayer.hasPlayedBefore() ? offlinePlayer.getName() : "Unknown player";
-
-                    sender.sendMessage(Component.text("- " + memberName, type.color));
-                }
-            }
-            sender.sendMessage(Component.text("-------------------------", NamedTextColor.YELLOW));
+            sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "no-clans"));
+            return;
         }
+
+        sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "clan-list-header"));
+
+        for (Clan clan : clans) {
+            sender.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "clan-list-entry", 
+                    clan.getName(), clan.getType().name));
+
+            UUID ownerUUID = clan.getOwnerUUID();
+            Player ownerPlayer = Bukkit.getPlayer(ownerUUID);
+            OfflinePlayer offlineOwner = Bukkit.getOfflinePlayer(ownerUUID);
+
+            String ownerName = ownerPlayer != null
+                    ? ownerPlayer.getName()
+                    : offlineOwner.hasPlayedBefore()
+                        ? offlineOwner.getName()
+                        : "Unknown player";
+
+            sender.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "clan-list-owner", ownerName));
+
+            for (UUID memberUUID : clan.getMemberUUIDs()) {
+                Player memberPlayer = Bukkit.getPlayer(memberUUID);
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(memberUUID);
+
+                String memberName = memberPlayer != null ? memberPlayer.getName()
+                        : offlinePlayer.hasPlayedBefore() ? offlinePlayer.getName() : "Unknown player";
+
+                sender.sendMessage(msg.getFormattedMessage(CLAN_MESSAGE_SECTION, "clan-list-member", memberName));
+            }
+        }
+        
+        sender.sendMessage(msg.getMessage(CLAN_MESSAGE_SECTION, "clan-list-footer"));
     }
 
     private void spawnGoonParticlesWithVelocity(@NotNull Player player) {
@@ -523,9 +517,8 @@ public class ClanCommands implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void broadcastToPlayersInRadius(@NotNull Player source, TextComponent message, double radius) {
+    private void broadcastToPlayersInRadius(@NotNull Player source, Component message, double radius) {
         Location sourceLocation = source.getLocation();
-
         source.getWorld().getPlayers().stream()
                 .filter(player -> player.getLocation().distance(sourceLocation) <= radius)
                 .forEach(player -> player.sendMessage(message));

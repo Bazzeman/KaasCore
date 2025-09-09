@@ -67,7 +67,7 @@ public class ClanService {
         }
     }
 
-    public void createClan(@NotNull String clanName, ClanType clanType, @NotNull UUID clanOwnerUUID) throws EmptyClanNameException, IllegalArgumentException {
+    public void createClan(@NotNull String clanName, ClanType clanType, @NotNull UUID clanOwnerUUID) throws IllegalArgumentException {
         if (clanName.isBlank()) {
             throw new EmptyClanNameException("Clan name cannot be null or blank");
         }
@@ -144,7 +144,7 @@ public class ClanService {
      * This method should only be used when the player's role (owner/member) is unknown.
      * Using the specific methods is more efficient as they avoid multiple lookups.
      */
-    @Deprecated(since = "1.2.3", forRemoval = false)
+    @Deprecated(since = "1.2.3")
     public @Nullable Clan getClanByPlayer(@NotNull UUID playerUUID) {
         Clan clan = lookupClanByOwner(playerUUID);
         if (clan != null) return clan.copy();
@@ -170,7 +170,7 @@ public class ClanService {
      * This method should only be used when the player's role (owner/member) is unknown.
      * Using the specific methods is more efficient as they avoid multiple lookups.
      */
-    @Deprecated(since = "1.2.3", forRemoval = false)
+    @Deprecated(since = "1.2.3")
     public boolean isInClan(@NotNull UUID playerUUID) {
         return lookupClanByOwner(playerUUID) != null || lookupClanByMember(playerUUID) != null;
     }
