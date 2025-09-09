@@ -6,21 +6,24 @@
 
 ### Update 1.2.4
 
+#### Added
+- Added `messages.yml` configuration file for customization of messages being sent out by the KaasCore plugin.
+
+#### Changed
+- The `/kaascore reload` command to be accessible for all command senders.
+- Sending messages to command senders from using raw string values to using formatted messages defined in `messages.yml`.
+
 #### Fixed
 - Bug where `/hidenametag` command would throw a `NullPointerException` whenever the command sender was not in a clan.
 - Bug where `/clan disband` command would throw a `null` error whenever the command sender did not own a clan.
 - Bug where `/clan disband` command would not reset clan members and owner their colored name at times. Was being caused by changes made to scoreboard teams in update 1.2.3.
 
-#### Changed
-
-#### Added
-- Added `messages.yml` configuration file for customization of messages being sent out by the KaasCore plugin.
 
 ### Update 1.2.3
 **Release date:** 13-06-2025
 
-#### Fixed
-- Bug where `/hidenametag` command would hide the player nametag instead of toggling it between visible and invisible.
+#### Added
+- Added three new team types, one for each clan type with the hide player nametag property.
 
 #### Changed
 - Scoreboard teams are now managed by the utility class `ScoreboardTeamManager`.
@@ -29,8 +32,8 @@
 - Made retrieving the clan by player with an unknown role (ower/member) easier by adding (depreciated) methods `getClanByPlayer` and `isInClan` to class `ClanService`.
 - Custom exceptions are now being returned by some `ClanService` methods in cases where the provided arguments were invalid or incorrect.
 
-#### Added
-- Added three new team types, one for each clan type with the hide player nametag property.
+#### Fixed
+- Bug where `/hidenametag` command would hide the player nametag instead of toggling it between visible and invisible.
 
 
 ### Update 1.2.2
